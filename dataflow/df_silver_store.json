@@ -1,15 +1,15 @@
 {
-	"name": "df_bronze_store",
+	"name": "df_silver_store",
 	"properties": {
 		"folder": {
-			"name": "Bronze"
+			"name": "Silver"
 		},
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "ds_bronze_stores_csv",
+						"referenceName": "ds_bronze_sql_dw_stores",
 						"type": "DatasetReference"
 					},
 					"name": "source1"
@@ -18,32 +18,41 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "ds_bronze_sql_dw_stores",
+						"referenceName": "ds_silver_sql_store",
 						"type": "DatasetReference"
 					},
 					"name": "sink1"
 				}
 			],
-			"transformations": [],
+			"transformations": [
+				{
+					"name": "cast1"
+				}
+			],
 			"scriptLines": [
 				"source(output(",
 				"          Store_ID as string,",
 				"          Store_Name as string,",
 				"          City as string,",
 				"          Country as string,",
-				"          Opened as string",
+				"          opened as string",
 				"     ),",
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
-				"     ignoreNoFilesFound: false) ~> source1",
-				"source1 sink(allowSchemaDrift: true,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source1",
+				"source1 cast(output(",
+				"          opened as integer",
+				"     ),",
+				"     errors: true) ~> cast1",
+				"cast1 sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     input(",
 				"          Store_ID as string,",
 				"          Store_Name as string,",
 				"          City as string,",
 				"          Country as string,",
-				"          opened as string",
+				"          Opened_Year as integer",
 				"     ),",
 				"     deletable:false,",
 				"     insertable:true,",
@@ -58,7 +67,7 @@
 				"          Store_Name,",
 				"          City,",
 				"          Country,",
-				"          opened = Opened",
+				"          Opened_Year = opened",
 				"     )) ~> sink1"
 			]
 		}
