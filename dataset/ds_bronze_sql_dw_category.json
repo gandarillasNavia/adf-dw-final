@@ -1,0 +1,32 @@
+{
+	"name": "ds_bronze_sql_dw_category",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sql_dw_final",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Bronze"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "category_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "category_name",
+				"type": "nvarchar"
+			},
+			{
+				"name": "extra_note",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "Bronze",
+			"table": "Categorias"
+		}
+	}
+}

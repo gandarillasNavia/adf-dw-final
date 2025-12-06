@@ -1,0 +1,40 @@
+{
+	"name": "ds_bronze_sql_dw_stores",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sql_dw_final",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Bronze"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "Store_ID",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Store_Name",
+				"type": "nvarchar"
+			},
+			{
+				"name": "City",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Country",
+				"type": "nvarchar"
+			},
+			{
+				"name": "opened",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "Bronze",
+			"table": "Tiendas"
+		}
+	}
+}
