@@ -1,0 +1,90 @@
+{
+	"name": "df_hechos_venta",
+	"properties": {
+		"folder": {
+			"name": "Gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_sql_sales",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_silver_sql_sales",
+						"type": "DatasetReference"
+					},
+					"name": "source2"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_hechos_ventas",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          sale_id as string,",
+				"          Date_Key as integer,",
+				"          Store_Key as string,",
+				"          Product_Key as string,",
+				"          Quantity as integer,",
+				"          Total_Amount as decimal(21,2)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT \\n    -- Mapeo directo de IDs\\n    V.sale_id,\\n    \\n    -- Generación de llave para Dim_Fecha (FK)\\n    -- Convierte \\'2023-06-16\\' a 20230616\\n    CAST(FORMAT(V.sale_date, \\'yyyyMMdd\\') AS INT) AS Date_Key,\\n    \\n    -- Llaves foráneas para Tienda y Producto\\n    V.store_id AS Store_Key,\\n    V.product_id AS Product_Key,\\n    \\n    -- Métricas\\n    V.quantity AS Quantity,\\n    \\n    -- Cálculo del monto total (Cantidad * Precio del Producto)\\n    -- Usamos ISNULL para evitar errores si no cruza, poniendo 0\\n    (V.quantity * ISNULL(P.Price, 0)) AS Total_Amount\\n\\nFROM Silver.Ventas V\\n-- Hacemos JOIN con Productos para obtener el precio actual\\nLEFT JOIN Silver.Productos P ON V.product_id = P.Product_ID\\nWHERE V.sale_date IS NOT NULL',",
+				"     format: 'query') ~> source1",
+				"source(output(",
+				"          sale_id as string,",
+				"          sale_date as date,",
+				"          store_id as string,",
+				"          product_id as string,",
+				"          quantity as integer",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     format: 'table') ~> source2",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          Fact_Venta_ID as integer,",
+				"          sale_id as string,",
+				"          Date_Key as integer,",
+				"          Store_Key as string,",
+				"          Product_Key as string,",
+				"          Quantity as integer,",
+				"          Total_Amount as decimal(12,2)",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          sale_id,",
+				"          Date_Key,",
+				"          Store_Key,",
+				"          Product_Key,",
+				"          Quantity,",
+				"          Total_Amount",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

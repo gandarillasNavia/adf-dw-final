@@ -1,0 +1,42 @@
+{
+	"name": "ds_dim_producto",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sql_dw_final",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "Product_Key",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Product_Name",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Category_Name",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Launch_Date",
+				"type": "date"
+			},
+			{
+				"name": "Current_Price",
+				"type": "decimal",
+				"precision": 10,
+				"scale": 2
+			}
+		],
+		"typeProperties": {
+			"schema": "Gold",
+			"table": "Dim_Producto"
+		}
+	}
+}

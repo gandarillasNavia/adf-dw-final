@@ -1,0 +1,55 @@
+{
+	"name": "ds_hechos_garantia",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sql_dw_final",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Gold"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "Fact_Garantia_ID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "claim_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Claim_Date_Key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Sale_Date_Key",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "sale_id",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Product_Key",
+				"type": "nvarchar"
+			},
+			{
+				"name": "Store_Key",
+				"type": "nvarchar"
+			},
+			{
+				"name": "repair_status",
+				"type": "nvarchar"
+			}
+		],
+		"typeProperties": {
+			"schema": "Gold",
+			"table": "Hechos_Garantias"
+		}
+	}
+}

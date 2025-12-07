@@ -1,0 +1,75 @@
+{
+	"name": "df_hechos_garantias",
+	"properties": {
+		"folder": {
+			"name": "Gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_sql_sales",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_hechos_garantia",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          claim_id as string,",
+				"          sale_id as string,",
+				"          repair_status as string,",
+				"          Claim_Date_Key as integer,",
+				"          Sale_Date_Key as integer,",
+				"          Product_Key as string,",
+				"          Store_Key as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT \\n    -- Datos propios de la garantía\\n    G.claim_id,\\n    G.sale_id,\\n    G.repair_status,\\n\\n    -- Generación de llave Fecha Reclamo (FK)\\n    CAST(FORMAT(G.claim_date, \\'yyyyMMdd\\') AS INT) AS Claim_Date_Key,\\n\\n    -- Generación de llave Fecha Venta Original (FK)\\n    -- Viene de la tabla Ventas\\n    CAST(FORMAT(V.sale_date, \\'yyyyMMdd\\') AS INT) AS Sale_Date_Key,\\n\\n    -- Recuperamos Producto y Tienda desde la tabla Ventas\\n    -- (Ya que el archivo de garantía no los tenía)\\n    V.product_id AS Product_Key,\\n    V.store_id AS Store_Key\\n\\nFROM Silver.Garantias G\\n-- Unimos con ventas usando el ID de venta\\n-- El INNER JOIN asegura que solo cargamos garantías de ventas que existen\\nINNER JOIN Silver.Ventas V ON G.sale_id = V.sale_id',",
+				"     format: 'query') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          Fact_Garantia_ID as integer,",
+				"          claim_id as string,",
+				"          Claim_Date_Key as integer,",
+				"          Sale_Date_Key as integer,",
+				"          sale_id as string,",
+				"          Product_Key as string,",
+				"          Store_Key as string,",
+				"          repair_status as string",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          claim_id,",
+				"          Claim_Date_Key,",
+				"          Sale_Date_Key,",
+				"          sale_id,",
+				"          Product_Key,",
+				"          Store_Key,",
+				"          repair_status",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}

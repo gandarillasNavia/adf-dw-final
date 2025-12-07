@@ -1,0 +1,72 @@
+{
+	"name": "df_dim_fecha",
+	"properties": {
+		"folder": {
+			"name": "Gold"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_silver_sql_sales",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_dim_fecha",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [],
+			"scriptLines": [
+				"source(output(",
+				"          ID_FECHA as integer,",
+				"          FECHA as date,",
+				"          ANIO as integer,",
+				"          MES as integer,",
+				"          DIA as integer,",
+				"          TRIMESTRE as integer,",
+				"          DIA_SEMANA as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     isolationLevel: 'READ_UNCOMMITTED',",
+				"     query: 'SELECT \\n    -- Generar ID (PK)\\n    CAST(FORMAT(FechaTable.Fecha, \\'yyyyMMdd\\') AS INT) AS ID_FECHA,\\n    -- Fecha Original\\n    FechaTable.Fecha AS FECHA,\\n    -- Atributos calculados por SQL\\n    YEAR(FechaTable.Fecha) AS ANIO,\\n    MONTH(FechaTable.Fecha) AS MES,\\n    DAY(FechaTable.Fecha) AS DIA,\\n    DATEPART(QUARTER, FechaTable.Fecha) AS TRIMESTRE,\\n    DATENAME(WEEKDAY, FechaTable.Fecha) AS DIA_SEMANA\\nFROM (\\n    -- Traemos fechas de Ventas\\n    SELECT sale_date AS Fecha FROM Silver.Ventas\\n    UNION -- UNION elimina duplicados automáticamente\\n    -- Traemos fechas de Garantías\\n    SELECT claim_date AS Fecha FROM Silver.Garantias\\n) AS FechaTable\\nWHERE FechaTable.Fecha IS NOT NULL',",
+				"     format: 'query') ~> source1",
+				"source1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          Date_Key as integer,",
+				"          Fecha as date,",
+				"          Anio as integer,",
+				"          Mes as integer,",
+				"          Nombre_Mes as string,",
+				"          Trimestre as integer",
+				"     ),",
+				"     deletable:false,",
+				"     insertable:true,",
+				"     updateable:false,",
+				"     upsertable:false,",
+				"     format: 'table',",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          Date_Key = ID_FECHA,",
+				"          Fecha = FECHA,",
+				"          Anio = ANIO,",
+				"          Mes = MES,",
+				"          Nombre_Mes = DIA_SEMANA,",
+				"          Trimestre = TRIMESTRE",
+				"     )) ~> sink1"
+			]
+		}
+	}
+}
