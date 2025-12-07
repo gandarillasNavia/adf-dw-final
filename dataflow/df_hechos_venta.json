@@ -44,7 +44,7 @@
 				"     allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     isolationLevel: 'READ_UNCOMMITTED',",
-				"     query: 'SELECT \\n    -- Mapeo directo de IDs\\n    V.sale_id,\\n    \\n    -- Generación de llave para Dim_Fecha (FK)\\n    -- Convierte \\'2023-06-16\\' a 20230616\\n    CAST(FORMAT(V.sale_date, \\'yyyyMMdd\\') AS INT) AS Date_Key,\\n    \\n    -- Llaves foráneas para Tienda y Producto\\n    V.store_id AS Store_Key,\\n    V.product_id AS Product_Key,\\n    \\n    -- Métricas\\n    V.quantity AS Quantity,\\n    \\n    -- Cálculo del monto total (Cantidad * Precio del Producto)\\n    -- Usamos ISNULL para evitar errores si no cruza, poniendo 0\\n    (V.quantity * ISNULL(P.Price, 0)) AS Total_Amount\\n\\nFROM Silver.Ventas V\\n-- Hacemos JOIN con Productos para obtener el precio actual\\nLEFT JOIN Silver.Productos P ON V.product_id = P.Product_ID\\nWHERE V.sale_date IS NOT NULL',",
+				"     query: 'SELECT \\n    V.sale_id,\\n    \\n    -- Generación de llave Fecha\\n    CAST(FORMAT(V.sale_date, \\'yyyyMMdd\\') AS INT) AS Date_Key,\\n    \\n    -- Llaves\\n    V.store_id AS Store_Key,\\n    V.product_id AS Product_Key,\\n    \\n    -- Métricas\\n    V.quantity AS Quantity,\\n    (V.quantity * ISNULL(P.Price, 0)) AS Total_Amount\\n\\nFROM Silver.Ventas V\\n-- JOIN con Productos para precio\\nLEFT JOIN Silver.Productos P ON V.product_id = P.Product_ID\\n-- INNER JOIN con Dim_Tienda para filtrar (AQUÍ ESTÁ EL ARREGLO)\\n-- Esto asegura que solo pasen ventas con tiendas válidas que ya existen en Gold\\nINNER JOIN Gold.Dim_Tienda T ON V.store_id = T.Store_Key\\n\\nWHERE V.sale_date IS NOT NULL',",
 				"     format: 'query') ~> source1",
 				"source(output(",
 				"          sale_id as string,",
